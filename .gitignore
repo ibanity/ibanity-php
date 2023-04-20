@@ -1,0 +1,9 @@
+# Environment file and certificate/private key .pem files
+config/*.pem
+config/.env
+# Exclude project dependencies
+vendor/
+# Exclude IDE files
+.idea/
+# Exclude Lock file
+composer.lock

@@ -1,0 +1,26 @@
+{
+  "name": "ibanity/ibanity-php",
+  "description": "PHP wrapper for the Ibanity API",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Source\\": "src/",
+      "Helpers\\": "src/helpers/",
+      "Config\\": "config/",
+      "Vendor\\": "vendor/",
+      "Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Pedro Ribeiro",
+      "email": "joaopedro.piresribeiro@ibanity.com"
+    }
+  ],
+  "require": {
+    "vlucas/phpdotenv": "^5.5",
+    "phpseclib/phpseclib": "~3.0",
+    "ext-curl": "*"
+  }
+}
