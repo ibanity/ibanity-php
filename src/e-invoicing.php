@@ -40,50 +40,50 @@ function request_access_tokens(string $refresh_token, string $client_id)
  * Supplier
  * */
 
-function get_supplier(string $supplier_id)
+function get_supplier(string $access_token, string $supplier_id)
 {
     global $e_invoicing_schema;
-    $uri = $e_invoicing_schema['suppliers'] . "/${supplier_id}";
+    $uri = $e_invoicing_schema['suppliers'] . "/$supplier_id";
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"])
+        "Authorization: Bearer $access_token"
     ];
     return get($uri, $headers);
 }
 
-function create_supplier($payload)
+function create_supplier(string $access_token, $payload)
 {
     global $e_invoicing_schema;
     $uri = $e_invoicing_schema['suppliers'];
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Content-Type: application/vnd.api+json"
     ];
     $json_payload = json_encode($payload);
     return post($uri, $headers, $json_payload);
 }
 
-function update_supplier(string $supplier_id, $payload)
+function update_supplier(string $access_token, string $supplier_id, $payload)
 {
     global $e_invoicing_schema;
-    $uri = $e_invoicing_schema['suppliers'] . "/${supplier_id}";
+    $uri = $e_invoicing_schema['suppliers'] . "/$supplier_id";
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Content-Type: application/vnd.api+json"
     ];
     $json_payload = json_encode($payload);
     return patch($uri, $headers, $json_payload);
 }
 
-function delete_supplier(string $supplier_id)
+function delete_supplier(string $access_token, string $supplier_id)
 {
     global $e_invoicing_schema;
-    $uri = $e_invoicing_schema['suppliers'] . "/${supplier_id}";
+    $uri = $e_invoicing_schema['suppliers'] . "/$supplier_id";
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"])
+        "Authorization: Bearer $access_token"
     ];
     return delete($uri, $headers);
 }
@@ -93,13 +93,13 @@ function delete_supplier(string $supplier_id)
  * Peppol Customer Search
  * */
 
-function create_peppol_customer_search($payload)
+function create_peppol_customer_search(string $access_token, $payload)
 {
     global $e_invoicing_schema;
     $uri = $e_invoicing_schema['peppol']['customers'];
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Content-Type: application/vnd.api+json"
     ];
     $json_payload = json_encode($payload);
@@ -111,25 +111,25 @@ function create_peppol_customer_search($payload)
  * Peppol Invoice
  * */
 
-function get_peppol_invoice(string $supplier_id, string $invoice_id)
+function get_peppol_invoice(string $access_token, string $supplier_id, string $invoice_id)
 {
     global $e_invoicing_schema;
     $uri = configure_path($e_invoicing_schema['peppol']['suppliers']['invoice'], ['supplierId' => $supplier_id, 'invoiceId' => $invoice_id]);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
     ];
     return get($uri, $headers);
 }
 
-function create_peppol_invoice(string $supplier_id, string $filename, $payload)
+function create_peppol_invoice(string $access_token, string $supplier_id, string $filename, $payload)
 {
     global $e_invoicing_schema;
     $uri = configure_path(remove_path_id($e_invoicing_schema['peppol']['suppliers']['invoice'], 'invoice'), ['supplierId' => $supplier_id]);
     $headers = [
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Content-Type: application/xml",
-        "Content-Disposition: inline; filename=${$filename}"
+        "Content-Disposition: inline; filename=$filename"
     ];
     return post($uri, $headers, $payload);
 }
@@ -139,25 +139,25 @@ function create_peppol_invoice(string $supplier_id, string $filename, $payload)
  * Peppol Credit Note
  * */
 
-function get_peppol_credit_note(string $supplier_id, string $credit_note_id)
+function get_peppol_credit_note(string $access_token, string $supplier_id, string $credit_note_id)
 {
     global $e_invoicing_schema;
     $uri = configure_path($e_invoicing_schema['peppol']['suppliers']['creditNote'], ['supplierId' => $supplier_id, 'creditNoteId' => $credit_note_id]);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
     ];
     return get($uri, $headers);
 }
 
-function create_peppol_credit_note(string $supplier_id, string $filename, $payload)
+function create_peppol_credit_note(string $access_token, string $supplier_id, string $filename, $payload)
 {
     global $e_invoicing_schema;
     $uri = configure_path(remove_path_id($e_invoicing_schema['peppol']['suppliers']['creditNote'], 'invoice'), ['supplierId' => $supplier_id]);
     $headers = [
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Content-Type: application/xml",
-        "Content-Disposition: inline; filename=${$filename}"
+        "Content-Disposition: inline; filename=$filename"
     ];
     return post($uri, $headers, $payload);
 }
@@ -167,13 +167,13 @@ function create_peppol_credit_note(string $supplier_id, string $filename, $paylo
  * Peppol Document
  * */
 
-function get_peppol_documents(array $parameters)
+function get_peppol_documents(string $access_token, array $parameters = ['fromStatusChanged' => new \DateTime()])
 {
     global $e_invoicing_schema;
     $uri = configure_query_parameters($e_invoicing_schema['peppol']['documents'], $parameters);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
     ];
     return get($uri, $headers);
 }
@@ -183,13 +183,13 @@ function get_peppol_documents(array $parameters)
  * Zoomit Customer Search
  * */
 
-function create_zoomit_customer_search(string $supplier_id, $payload)
+function create_zoomit_customer_search(string $access_token, string $supplier_id, $payload)
 {
     global $e_invoicing_schema;
     $uri = configure_path($e_invoicing_schema['zoomit']['suppliers']['customers'], ['supplierId' => $supplier_id]);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Content-Type: application/vnd.api+json"
     ];
     $json_payload = json_encode($payload);
@@ -201,25 +201,25 @@ function create_zoomit_customer_search(string $supplier_id, $payload)
  * Zoomit Invoice
  * */
 
-function get_zoomit_invoice(string $supplier_id, string $invoice_id)
+function get_zoomit_invoice(string $access_token, string $supplier_id, string $invoice_id)
 {
     global $e_invoicing_schema;
     $uri = configure_path($e_invoicing_schema['zoomit']['suppliers']['invoice'], ['supplierId' => $supplier_id, 'invoiceId' => $invoice_id]);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
     ];
     return get($uri, $headers);
 }
 
-function create_zoomit_invoice(string $supplier_id, string $filename, $payload)
+function create_zoomit_invoice(string $access_token, string $supplier_id, string $filename, $payload)
 {
     global $e_invoicing_schema;
     $uri = configure_path(remove_path_id($e_invoicing_schema['zoomit']['suppliers']['invoice'], 'invoice'), ['supplierId' => $supplier_id]);
     $headers = [
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Content-Type: application/xml",
-        "Content-Disposition: inline; filename=${$filename}"
+        "Content-Disposition: inline; filename=$filename"
     ];
     return post($uri, $headers, $payload);
 }
@@ -229,25 +229,25 @@ function create_zoomit_invoice(string $supplier_id, string $filename, $payload)
  * Zoomit Credit Note
  * */
 
-function get_zoomit_credit_note(string $supplier_id, string $credit_note_id)
+function get_zoomit_credit_note(string $access_token, string $supplier_id, string $credit_note_id)
 {
     global $e_invoicing_schema;
     $uri = configure_path($e_invoicing_schema['zoomit']['suppliers']['creditNote'], ['supplierId' => $supplier_id, 'creditNoteId' => $credit_note_id]);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
     ];
     return get($uri, $headers);
 }
 
-function create_zoomit_credit_note(string $supplier_id, string $filename, $payload)
+function create_zoomit_credit_note(string $access_token, string $supplier_id, string $filename, $payload)
 {
     global $e_invoicing_schema;
     $uri = configure_path(remove_path_id($e_invoicing_schema['zoomit']['suppliers']['creditNote'], 'invoice'), ['supplierId' => $supplier_id]);
     $headers = [
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Content-Type: application/xml",
-        "Content-Disposition: inline; filename=${$filename}"
+        "Content-Disposition: inline; filename=$filename"
     ];
     return post($uri, $headers, $payload);
 }
@@ -257,13 +257,13 @@ function create_zoomit_credit_note(string $supplier_id, string $filename, $paylo
  * Zoomit Document
  * */
 
-function get_zoomit_documents(array $parameters)
+function get_zoomit_documents(string $access_token, array $parameters = ['fromStatusChanged' => new \DateTime()])
 {
     global $e_invoicing_schema;
     $uri = configure_query_parameters($e_invoicing_schema['zoomit']['documents'], $parameters);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
     ];
     return get($uri, $headers);
 }

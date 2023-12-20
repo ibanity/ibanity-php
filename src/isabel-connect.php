@@ -8,7 +8,7 @@ require_once 'helpers/uri-path.php';
 require_once 'schema.php';
 
 use Dotenv\Dotenv;
-use function Ibanity\Helpers\HttpVerbs\{delete, get, patch, post};
+use function Ibanity\Helpers\HttpVerbs\{get, post};
 use function Ibanity\Helpers\UriPath\{configure_path, configure_query_parameters, remove_path_id};
 use function Ibanity\Schema\get_isabel_connect;
 
@@ -31,7 +31,7 @@ function request_initial_tokens(string $code, string $redirect_uri)
         "Authorization: Basic " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
         "Content-Type: application/x-www-form-urlencoded",
     ];
-    $post_fields = "grant_type=authorization_code&code={$code}&redirect_uri={$redirect_uri}";
+    $post_fields = "grant_type=authorization_code&code=$code&redirect_uri=$redirect_uri";
     return post($uri, $headers, $post_fields);
 }
 
@@ -44,11 +44,11 @@ function request_access_tokens(string $refresh_token, string $client_id)
         "Authorization: Basic " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
         "Content-Type: application/x-www-form-urlencoded"
     ];
-    $post_fields = "grant_type=refresh_token&refresh_token={$refresh_token}&client_id={$client_id}";
+    $post_fields = "grant_type=refresh_token&refresh_token=$refresh_token&client_id=$client_id";
     return post($uri, $headers, $post_fields);
 }
 
-function revoke_refresh_token(string $token)
+function revoke_refresh_token(string $refresh_token)
 {
     global $isabel_schema;
     $uri = $isabel_schema['oAuth2']['revoke'];
@@ -57,7 +57,7 @@ function revoke_refresh_token(string $token)
         "Authorization: Basic " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
         "Content-Type: application/x-www-form-urlencoded"
     ];
-    $post_fields = "token=${$token}";
+    $post_fields = "token=$refresh_token";
     return post($uri, $headers, $post_fields);
 }
 
@@ -66,24 +66,24 @@ function revoke_refresh_token(string $token)
  * Account
  * */
 
-function list_accounts(array $parameters)
+function list_accounts(string $access_token, array $parameters = null)
 {
     global $isabel_schema;
     $uri = configure_query_parameters(remove_path_id($isabel_schema['accounts'], 'accountReport'), $parameters);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"])
+        "Authorization: Bearer $access_token"
     ];
     return get($uri, $headers);
 }
 
-function get_account(string $account_id)
+function get_account(string $access_token, string $account_id)
 {
     global $isabel_schema;
     $uri = configure_path($isabel_schema['accounts'], ['accountId' => $account_id]);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"])
+        "Authorization: Bearer $access_token"
     ];
     return get($uri, $headers);
 }
@@ -93,13 +93,13 @@ function get_account(string $account_id)
  * Balance
  * */
 
-function list_balances(string $account_id, array $parameters)
+function list_balances(string $access_token, string $account_id, array $parameters = null)
 {
     global $isabel_schema;
     $uri = configure_query_parameters(configure_path($isabel_schema['account']['balances'], ['accountId' => $account_id]), $parameters);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"])
+        "Authorization: Bearer $access_token"
     ];
     return get($uri, $headers);
 }
@@ -109,13 +109,13 @@ function list_balances(string $account_id, array $parameters)
  * Transaction
  * */
 
-function list_transactions(string $account_id, array $parameters)
+function list_transactions(string $access_token, string $account_id, array $parameters = null)
 {
     global $isabel_schema;
     $uri = configure_query_parameters(configure_path($isabel_schema['account']['transactions'], ['accountId' => $account_id]), $parameters);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"])
+        "Authorization: Bearer $access_token"
     ];
     return get($uri, $headers);
 }
@@ -125,13 +125,13 @@ function list_transactions(string $account_id, array $parameters)
  * Intraday Transaction
  * */
 
-function list_intraday_transactions(string $account_id, array $parameters)
+function list_intraday_transactions(string $access_token, string $account_id, array $parameters = null)
 {
     global $isabel_schema;
     $uri = configure_query_parameters(configure_path($isabel_schema['account']['intradayTransactions'], ['accountId' => $account_id]), $parameters);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"])
+        "Authorization: Bearer $access_token"
     ];
     return get($uri, $headers);
 }
@@ -141,23 +141,23 @@ function list_intraday_transactions(string $account_id, array $parameters)
  * Account Report
  * */
 
-function list_account_reports(array $parameters)
+function list_account_reports(string $access_token, array $parameters = null)
 {
     global $isabel_schema;
     $uri = configure_query_parameters(remove_path_id($isabel_schema['accountReports'], 'accountReport'), $parameters);
     $headers = [
         "Accept: application/vnd.api+json",
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"])
+        "Authorization: Bearer $access_token"
     ];
     return get($uri, $headers);
 }
 
-function get_account_report(string $account_report_id, array $parameters)
+function get_account_report(string $access_token, string $account_report_id)
 {
     global $isabel_schema;
-    $uri = configure_query_parameters(configure_path($isabel_schema['account']['intradayTransactions'], ['accountId' => $account_report_id]), $parameters);
+    $uri = configure_path($isabel_schema['account']['intradayTransactions'], ['accountId' => $account_report_id]);
     $headers = [
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"])
+        "Authorization: Bearer $access_token"
     ];
     return get($uri, $headers);
 }
@@ -167,27 +167,27 @@ function get_account_report(string $account_report_id, array $parameters)
  * Bulk Payment Initiation
  * */
 
-function create_bulk_payment_initiation(string $filename, $payload, $is_shared = true, $is_hidden = false)
+function create_bulk_payment_initiation(string $access_token, string $filename, $payload, $is_shared = true, $is_hidden = false)
 {
     global $isabel_schema;
     $uri = remove_path_id($isabel_schema['bulkPaymentInitiationRequests'], 'bulkPaymentInitiationRequest');
     $headers = [
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Accept: application/vnd.api+json",
         "Content-Type: application/xml",
-        "Content-Disposition: inline; filename=${$filename}",
-        "Is-Shared: ${$is_shared}",
-        "Hide-Details: ${$is_hidden}"
+        "Content-Disposition: inline; filename=$filename",
+        "Is-Shared: $is_shared",
+        "Hide-Details: $is_hidden"
     ];
     return post($uri, $headers, $payload);
 }
 
-function get_bulk_payment_initiation(string $bulk_payment_initiation_request_id)
+function get_bulk_payment_initiation(string $access_token, string $bulk_payment_initiation_request_id)
 {
     global $isabel_schema;
     $uri = configure_path($isabel_schema['bulkPaymentInitiationRequests'], ["bulkPaymentInitiationRequestId" => $bulk_payment_initiation_request_id]);
     $headers = [
-        "Authorization: Bearer " . base64_encode($_ENV["CLIENT_ID"] . ":" . $_ENV["CLIENT_SECRET"]),
+        "Authorization: Bearer $access_token",
         "Accept: application/vnd.api+json"
     ];
     return get($uri, $headers);

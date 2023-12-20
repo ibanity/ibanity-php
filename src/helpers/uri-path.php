@@ -46,19 +46,34 @@ function configure_path($uri, $attributes = []): string
     return $uri;
 }
 
-function configure_query_parameters($uri, array $parameters): string
+function configure_query_parameters(string $uri, array $parameters): string
 {
-    foreach ($parameters as $key => $value) {
-        if ($key == 'page_limit') {
-            $uri .= urlencode("page[limit]=${$value}");
-        } else if ($key == 'page_before') {
-            $uri .= urlencode("page[before]=${$value}");
-        } else if ($key == 'page_after') {
-            $uri .= urlencode("page[after]=${$value}");
-        } else {
-// TODO: implement a class for the filter object
-            $uri .= urlencode("filter[][]=${$value}");
+    if (!empty($parameters)) {
+        $paramMappings = [
+            'page_limit' => 'page[limit]',
+            'page_before' => 'page[before]',
+            'page_after' => 'page[after]',
+            'from_status_changed' => 'fromStatusChanged',
+            'to_status_changed' => 'toStatusChanged',
+            'page_number' => 'page[number]',
+            'page_size' => 'page[size]',
+            'offset' => 'offset',
+            'size' => 'size',
+            'from' => 'from',
+            'to' => 'to',
+            'after' => 'after',
+        ];
+
+        foreach ($parameters as $key => $value) {
+            if (array_key_exists($key, $paramMappings)) {
+                $uri .= urlencode("{$paramMappings[$key]}=$value");
+            } elseif (in_array($key, ['country', 'name', 'paymentsEnabled', 'bulkPaymentsEnabled', 'sharedBrandName', 'sharedBrandReference'])) {
+                // Handle filter conditions for specific fields with operators
+                $operator = is_array($value) ? 'in' : ($key === 'name' ? 'contains' : 'eq'); // Default is 'eq'
+                $uri .= urlencode("filter[$key][$operator]=$value");
+            }
         }
     }
+
     return $uri;
 }
